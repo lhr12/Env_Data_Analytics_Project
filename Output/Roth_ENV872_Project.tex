@@ -131,22 +131,24 @@
 \maketitle
 \begin{abstract}
 This project explores the temporal and spatial trends of tropospheric
-ozone in Los Angeles County from 1980 to 2018. It was determined that
-ozone levels had decreased over time between 1980 and 2011, but had
-increased slightly after 2011 until 2018. There was found to be a
-significant difference between each season and each month of ozone.
-Finally, it was determined that ozone levels varied significantly
-between the sites over the time period. The Clean Air Act Amendment of
-1990 is likely the reason for the decline in tropospheric ozone after
-1990. However, the increasing population in a car-dependent city is
-likely the cause for the increase in ozone levels after 2011.
-Additionally, the higher levels of ozone found inland is likely due to
-daytime sea-breezes blowing smog inland and trapping it by the
-surrounding mountain range. Climate change poses the risk of increasing
-ozone levels through higher average temperatures. Increasing the
-proportion of electric and hybrid vehicles on the road will likely help
-to decrease ozone levels in the future and mitigate the impacts of
-climate change.
+ozone in Los Angeles County from 1980 to 2018. Through the use of
+non-parametric statistical analyses, it was determined that ozone levels
+had decreased over time between 1980 and 2011, but had increased
+slightly after 2011 until 2018. There was found to be a significant
+difference in ozone levels between each season and each month of
+measurements. Finally, it was determined that ozone levels varied
+significantly between the sites over the time period. The Clean Air Act
+was amended in 1990 is likely the reason for the decline in tropospheric
+ozone after that year. However, the increasing population in a
+car-dependent city as well as economic growth following the 2008 Great
+Recession are likely the cause for the increase in ozone levels after
+2011. Additionally, the higher levels of ozone found inland are likely
+due to daytime sea-breezes blowing smog away from the coast and trapping
+it within the surrounding mountain range. Climate change poses the risk
+of increasing ozone levels through higher average temperatures.
+Increasing the proportion of electric and hybrid vehicles on the road
+will likely help to decrease ozone levels in the future and mitigate the
+impacts of climate change.
 \end{abstract}
 
 \newpage
@@ -163,33 +165,34 @@ photochemical smog, which is air pollution associated with chemical
 reactions driven by sunlight (Sillman, 2003). Ozone can have health
 impacts on human respiratory systems, as well as negatively affecting
 forests and agricultural crops (Sillman, 2003). High ozone events are
-associated with sunshine, high temperatures, light winds, and conditions
+exacerbated by sunshine, high temperatures, light winds, and conditions
 that suppress vertical atmospheric mixing (Sillman, 2003). Smog is also
 associated with high levels of automobile emissions containing
 hydrocarbons and nitrogen oxides (Haagen-Smit, 1952). Therefore, because
-it experiences all of these factors influencing high ozone levels, smog
-is infamous in the city of Los Angeles (Sillman, 2003; Haagen-Smit,
-1952).
+it experiences high temperatures, plentifly sunshine, low atmospheric
+mixing, and is predominantly transversed by car, smog has become
+infamous in the city of Los Angeles (Sillman, 2003; Haagen-Smit, 1952).
 
-I want to research if ozone levels in Los Angeles County have changed
-temporally and spatially across the county. I am using daily ozone data
-collected at various Los Angeles County site locations between the years
-of 1980 and 2018. This data will give me the date, location, and AQI
-value for each day between January 1, 1980 through December 31, 2018.
-The AQI is an index used to represent ozone levels in the atmosphere.
+I want to determine through statistical analysis if ozone levels in Los
+Angeles County have changed temporally and spatially across the county.
+I am using daily ozone data collected at various Los Angeles County
+locations between the years of 1980 and 2018. This data will provide me
+the date, location, and AQI value for each day between January 1, 1980
+through December 31, 2018. The AQI is an index used to represent ozone
+levels in the atmosphere.
 
 \newpage
 
 \section{Dataset Information}\label{dataset-information}
 
 The data were collected from the EPA's outdoor air quality data website
-using the Download Daily Data tool. The data sets were downloaded
+using the Download Daily Data tool. The data were downloaded
 individually by year, leading to a total of 39 data sets. Each data set
 contained the date, the source of the data, the daily 8-hour ozone
 concentration, the daily AQI value, the site name, and the longitude and
 latitude of each site, as well as other columns that are of slightly
-less importance. Table 1 shows a summary of the raw data structure using
-the 1980 dataset as an example.
+less importance to the study. Table 1 shows a summary of the raw data
+structure using the 1980 dataset as an example.
 
 \begin{longtable}[]{@{}llrlrlrr@{}}
 \caption{1980 Raw Data Table}\tabularnewline
@@ -221,10 +224,10 @@ Longitude\tabularnewline
 \section{Exploratory Data Analysis and
 Wrangling}\label{exploratory-data-analysis-and-wrangling}
 
-First, I looked at a summary of the AQI values for 1980, 1990, 2000,
-2010, and 2018 to get an idea of how the min, median, mean, and max
-values of ozone levels have changed over time throughout the entire
-county.
+To first explore my data, I looked at a summary of the AQI values for
+1980, 1990, 2000, 2010, and 2018 to get an idea of how the minimum,
+median, mean, and maximum values of ozone levels have changed over time
+by decade throughout the entire county.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -285,12 +288,13 @@ To wrangle my data, I made summary tables for each of the 39 years of
 data by summarizing the AQI values and grouping by month. I made sure
 that all of the dates were classified as dates. Then, I used rbind to
 combine all of my summary tables from each year into one large data set.
-Below is an example of the wrangling for the year 1980. I corrected the
-column names to make my data analysis easier and filtered the full data
-set to only combine the 9 sites with the most complete data for all of
-the years. Additionally, I created a master data set of all of the
-non-summarized years of ozone data and wrangled it in a similar manner
-to only include the 9 sites.
+Below is an example of the wrangling process for the year 1980, which
+was repeated for each year through 2018. I corrected the column names to
+make my data analysis easier and filtered the full data set to only
+combine the 9 sites with the most complete data for all of the years.
+Additionally, I created a master data set of all of the non-summarized
+years of ozone data and wrangled it in a similar manner to only include
+the 9 sites.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -375,15 +379,16 @@ to only include the 9 sites.
 \end{Highlighting}
 \end{Shaded}
 
-To explore my data, I first wanted to see how the monthly AQI values
-were distributed. Figure 1 shows a histogram of the AQI monthly
+To explore my data visually, I first wanted to see how the monthly AQI
+values were distributed. Figure 1 shows a histogram of the AQI monthly
 averages, and it was apparent that the data was not normally
-distributed. To confirm this, Figure 2 is a qqnorm of the Monthly AQI
-means along with a qqline, which shows that the points did not follow
-the line very well, giving me further evidence that the data was not
-normally distributed. Finally, Figure 3 is a box plot of all of the
-monthly AQI averages separated by site showing how ozone differed by
-location.
+distributed. To confirm this, Figure 2 is a Q-Q plot of the Monthly AQI
+means, which shows that the points did not follow the Q-Q line very
+well, giving me further evidence that the data was not normally
+distributed. This indicated to me that I would need to perform
+non-paramentric statistical tests on my data. Finally, Figure 3 is a box
+plot of all of the monthly AQI averages separated by site showing how
+ozone differed by location.
 
 \begin{figure}
 \centering
@@ -410,19 +415,25 @@ location.
 I ran a series of Mann-Kendall and Pettitt tests to find where the
 statistically significant breakpoints were in the monthly summary data.
 First, the Mann-Kendall test on the entire data set showed that there
-was a significant negative trend for all of the years of ozone data.
-Next, the pettitt test on the entire data set showed that there was a
-break point at the year 1995. Mann-Kendall tests on the data before and
-after the break point showed a significant negative trend between 1980
-and 1995 and significant positive trend from 1995 to 2018. A second
-Pettitt test showed another break point in 2011. The Mann-Kendall tests
-showed there was not a significant trend from 1995 to 2011 and a
-significant positive trend from 2011 to 2018. A third Pettitt test
-showed one more break point at 2016. The Mann-Kendall tests showed there
-was a significant positive trend from 2011 to 2016, and no significant
-trend between 2016 and 2019. A final Pettitt test was run on the
-remaining section to ensure there were no more statistically significant
-break points in the data remaining.
+was a significant negative trend for all of the years of ozone data (z =
+-27.304, n = 3951, p-value \textless{} 2.2e-16). Next, the Pettitt test
+on the entire data set showed that there was a break point at the year
+1995 (U = 2454000, p-value \textless{} 2.2e-16). Mann-Kendall tests on
+the data before and after the break point showed a significant negative
+trend between 1980 and 1995 (z = -5.1171, n = 1499, p-value = 3.102e-07)
+and significant positive trend from 1995 to 2018 (z = 7.2036, n = 2452,
+p-value = 5.863e-13). A second Pettitt test showed another break point
+in 2011 (U = 227390, p-value = 1.462e-09). The Mann-Kendall tests showed
+there was not a significant trend from 1995 to 2011 (z = 1.8849, n =
+1790, p-value = 0.05945) and a significant positive trend from 2011 to
+2018 (z = 2.9277, n = 662, p-value = 0.003415). A third Pettitt test
+showed one more break point at 2016 (U = 18004, p-value = 0.002478). The
+Mann-Kendall tests showed there was a significant positive trend from
+2011 to 2016 (z = 2.618, n = 486, p-value = 0.008846), and no
+significant trend between 2016 and 2019 (z = -0.83549, n = 176, p-value
+= 0.4034). A final Pettitt test was run on the remaining section to
+ensure there were no more statistically significant break points in the
+data remaining (U* = 1387, p-value = 0.2436).
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -626,10 +637,11 @@ I then Ran a Seasonal Mann-Kendall test on the entire data set to
 determine if there was any statistically significant differences between
 subsets of each year. First, I ran a seasonal test with a frequency of
 4, representing the 3 months of each annual season. The results showed a
-statistically significant difference between all four seasons. Next, I
-ran a seasonal test with a frequency of 12, representing all 12 months
-out of the year. The results showed a statistically significant
-difference between each of the 12 months out of the year.
+statistically significant difference between all four seasons
+(p\textless{}0.01). Next, I ran a seasonal test with a frequency of 12,
+representing all 12 months out of the year. The results showed a
+statistically significant difference between each of the 12 months out
+of the year (p\textless{}0.01).
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -702,7 +714,8 @@ Finally, since the data was not normally distributed, I ran a
 Kruskal-Wallis test to determine if there was a significant difference
 in Ozone concentration between each site. The results of the test showed
 that there is a significant difference between the monthly averaged AQI
-values for each site between 1980 and 2018.
+values for each site between 1980 and 2018 (Kruskal-Wallis chi-squared =
+102.21, df = 8, p-value \textless{} 2.2e-16).
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -802,17 +815,20 @@ amendment to the Clean Air Act are likely the reason for this trend
 (EPA, 2017). However, it also showed that there have been some
 increasing average ozone levels since 2011. This may be due to
 population growth in a city whose transportation is dominated by
-personal automobiles. This, combined with rising average annual
-temperatures as a result of climate change, would likely result in
-higher levels of ozone throughout the year. The increasing proportion of
-electric and hybrid vehicles owned by Los Angeles County residents could
-reduce this effect in the coming decades in order to mitigate the
-impacts of climate change.
+personal automobiles as well as an increase in economic growth and
+emissions following the Great Recession of 2008 (Peters et al., 2012).
+This, combined with rising average annual temperatures as a result of
+climate change, would likely result in higher levels of ozone throughout
+the more recent years. Because vehicle emissions are such a large
+contributor to tropospheric ozone and photochemical smog, increasing the
+proportion of electric and hybrid vehicles owned and driven by Los
+Angeles County residents could reduce this effect in the coming decades
+in order to mitigate the impacts of climate change.
 
 Additionally, there were found to be higher levels of ozone at inland
 measurement sites compared to those closer to the coast. This could be
-attributed to the unique geographic composition of Los Angeles. The
-daytime sea breeze blows smog away from the coast, where it is then
+attributed to the unique geographic composition of Los Angeles County.
+The daytime sea breeze blows smog away from the coast, where it is then
 trapped by the surrounding mountain formations, leading to higher levels
 of ozone around the inner edges of Los Angeles during the day (Lu \&
 Turco, 1996). There were some irregularities in the data between 1980
@@ -836,6 +852,10 @@ Industrial \& Engineering Chemistry, 44(6), 1342-1346.
 Lu, R., \& Turco, R. P. (1996). Ozone distributions over the Los Angeles
 basin: Three-dimensional simulations with the SMOG model. Atmospheric
 Environment, 30(24), 4155-4176.
+
+Peters, G. P., Marland, G., Le Quéré, C., Boden, T., Canadell, J. G., \&
+Raupach, M. R. (2012). Rapid growth in CO 2 emissions after the
+2008--2009 global financial crisis. Nature Climate Change, 2(1), 2.
 
 Sillman, S. (2003). Overview: Tropospheric ozone, smog and ozone-NOx-VOC
 sensitivity. Treatise on Geochemistry.
