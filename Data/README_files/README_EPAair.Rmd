@@ -1,14 +1,13 @@
-# EPA Air Quality Datasets
+# EPA Air Ozone Dataset
 
 ## Summary
-This dataset was prepared for a research project for the Environmental Data Analytics (ENV 872L) at the Nicholas School of
-the Environment at Duke University, April 2019
+This dataset was assembled for a research project for the Environmental Data Analytics (ENV 872L) at the Nicholas School of the Environment at Duke University, April 2019
 
 The dataset contains data from air quality monitoring of Ozone in Los Angeles County, CA from 1980-2018.
 
 ## Database Information
 
-Data were collected using the Doanload Daily Data tool (https://www.epa.gov/outdoor-air-quality-data/download-daily-data).
+Data were collected using the Download Daily Data tool: (https://www.epa.gov/outdoor-air-quality-data/download-daily-data).
 The following selections were made: 
 * Ozone (Air Pollutant)
 * 1980-2018 (Years)
@@ -43,12 +42,12 @@ Data were accessed 2019-03-21.
 Information gathered from: https://www.epa.gov/outdoor-air-quality-data/air-data-basic-information and https://aqs.epa.gov/aqsweb/documents/AQS_Format.html
 
 
-Date: month/day/year
-Source: AQS (Air Quality System) or AirNow
+Date: Year/month/day
+Source: AQS (Air Quality System)
 Site ID: A unique number within the county identifying the site.
 POC: “Parameter Occurrence Code” used to distinguish different instruments that measure the same parameter at the same site.
-Daily Max 8-hour Ozone Concentration: numeric value
-Units: units for concentration
+Daily Max 8-hour Ozone Concentration: numeric value showing ozone concentrations
+Units: units for concentration in parts per million (ppm)
 
 Daily_AQI_VALUE: Air quality index (range 0-500). Levels: 
 0-50: Good (green)
@@ -58,8 +57,8 @@ Daily_AQI_VALUE: Air quality index (range 0-500). Levels:
 201-300: Very unhealthy (purple)
 301-500: Hazardous (maroon)
 
-Site Name
-DAILY_OBS_COUNT: number of observations per day
+Site Name: locaiton of measurement within the county
+DAILY_OBS_COUNT: number of observations/day
 PERCENT_COMPLETE
 AQS_PARAMETER_CODE
 AQS_PARAMETER_DESC

@@ -1,13 +1,40 @@
 ---
-title: "Project_Code"
-subtitle: "https://github.com/lhr12"
+title: "Ozone in Los Angeles County 1980-2018"
 author: "Lindsay Roth"
-date: "4/3/2019"
-output: pdf_document
-editor_options: 
-  chunk_output_type: console
+fontsize: 12pt
+output:
+  pdf_document:
+    fig_caption: yes
+    keep_tex: yes
+    number_sections: yes
+  html_document:
+    df_print: paged
+mainfont: Times New Roman
+geometry: margin=2.54cm
+subtitle: https://github.com/lhr12
+abstract: This project explores the temporal and spatial trends of tropospheric ozone in Los Angeles County from 1980 to 2018.  It was determined that ozone levels had decreased over time between 1980 and 2011, but had increased slightly after 2011 until 2018. There was found to be a significant difference between each season and each month of ozone. Finally, it was determined that ozone levels varied significantly between the sites over the time period.  The Clean Air Act Amendment of 1990 is likely the reason for the decline in tropospheric ozone after 1990. However, the increasing population in a car-dependent city is likely the cause for the increase in ozone levels after 2011.  Additionally, the higher levels of ozone found inland is likely due to daytime sea-breezes blowing smog inland and trapping it by the surrounding mountain range.  Climate change poses the risk of increasing ozone levels through higher average temperatures. Increasing the proportion of electric and hybrid vehicles on the road will likely help to decrease ozone levels in the future and mitigate the impacts of climate change.
 ---
-```{r load packages}
+
+<Information in these brackets are used for annotating the RMarkdown file. They will not appear in the final version of the PDF document>
+
+\newpage
+\tableofcontents 
+\newpage
+\listoftables 
+\newpage
+\listoffigures 
+\newpage
+
+<Setup the global options for the R chunks in your document>
+
+
+
+```{r setup, include=FALSE}
+# Set your working directory
+setwd("~/Documents/MEM 1st Year/Spring 2019/Env_Data_Analytics/ENV_Data_Analytics_Project")
+
+# Load your packages
+library(knitr)
 library(ggplot2)
 library(tidyverse)
 library(lubridate)
@@ -20,21 +47,21 @@ library(lsmeans)
 library(multcompView)
 library(trend)
 library(mapview)
+library(leaflet)
 library(sf)
 library(gridExtra)
 library(grid)
 library(lattice)
 
+# Set your ggplot theme
 mytheme <- theme_classic(base_size = 12) +
   theme(axis.text = element_text(color = "black"), 
         legend.position = "top", 
         legend.key.size = unit(0.5, "cm"))
 theme_set(mytheme)
-
-#setwd("~/Documents/MEM 1st Year/Spring 2019/Env_Data_Analytics/ENV_Data_Analytics_Project")
 ```
 
-```{r download data files}
+```{r hidden code, include =FALSE}
 O3_1980 <- read.csv("./Data/Raw/EPAair_O3_LosAngeles1980_Raw.csv")
 O3_1981 <- read.csv("./Data/Raw/EPAair_O3_LosAngeles1981_Raw.csv")
 O3_1982 <- read.csv("./Data/Raw/EPAair_O3_LosAngeles1982_Raw.csv")
@@ -74,9 +101,7 @@ O3_2015 <- read.csv("./Data/Raw/EPAair_O3_LosAngeles2015_Raw.csv")
 O3_2016 <- read.csv("./Data/Raw/EPAair_O3_LosAngeles2016_Raw.csv")
 O3_2017 <- read.csv("./Data/Raw/EPAair_O3_LosAngeles2017_Raw.csv")
 O3_2018 <- read.csv("./Data/Raw/EPAair_O3_LosAngeles2018_Raw.csv")
-```
 
-```{r fix dates}
 
 O3_1980$Date <- as.Date(O3_1980$Date, format = "%m/%d/%Y")
 O3_1981$Date <- as.Date(O3_1981$Date, format = "%m/%d/%Y")
@@ -118,247 +143,8 @@ O3_2016$Date <- as.Date(O3_2016$Date, format = "%m/%d/%Y")
 O3_2017$Date <- as.Date(O3_2017$Date, format = "%m/%d/%Y")
 O3_2018$Date <- as.Date(O3_2018$Date, format = "%m/%d/%Y")
 
-```
+O3_1980$DAILY_AQI_VALUE <- as.numeric(O3_1980$DAILY_AQI_VALUE)
 
-```{r summaries by year}
-O3_1980_summary <- O3_1980 %>%
-  mutate(Year = year(O3_1980$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_1981_summary <- O3_1981 %>%
-  mutate(Year = year(O3_1981$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_1982_summary <- O3_1982 %>%
-  mutate(Year = year(O3_1982$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_1983_summary <- O3_1983 %>%
-  mutate(Year = year(O3_1983$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_1984_summary <- O3_1984 %>%
-  mutate(Year = year(O3_1984$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_1985_summary <- O3_1985 %>%
-  mutate(Year = year(O3_1985$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_1986_summary <- O3_1986 %>%
-  mutate(Year = year(O3_1986$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_1987_summary <- O3_1987 %>%
-  mutate(Year = year(O3_1987$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_1988_summary <- O3_1988 %>%
-  mutate(Year = year(O3_1988$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_1989_summary <- O3_1989 %>%
-  mutate(Year = year(O3_1989$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_1990_summary <- O3_1990 %>%
-  mutate(Year = year(O3_1990$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_1991_summary <- O3_1991 %>%
-  mutate(Year = year(O3_1991$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_1992_summary <- O3_1992 %>%
-  mutate(Year = year(O3_1992$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_1993_summary <- O3_1993 %>%
-  mutate(Year = year(O3_1993$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_1994_summary <- O3_1994 %>%
-  mutate(Year = year(O3_1994$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_1995_summary <- O3_1995 %>%
-  mutate(Year = year(O3_1995$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_1996_summary <- O3_1996 %>%
-  mutate(Year = year(O3_1996$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_1997_summary <- O3_1997 %>%
-  mutate(Year = year(O3_1997$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_1998_summary <- O3_1998 %>%
-  mutate(Year = year(O3_1998$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_1999_summary <- O3_1999 %>%
-  mutate(Year = year(O3_1999$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2000_summary <- O3_2000 %>%
-  mutate(Year = year(O3_2000$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2001_summary <- O3_2001 %>%
-  mutate(Year = year(O3_2001$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2002_summary <- O3_2002 %>%
-  mutate(Year = year(O3_2002$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2003_summary <- O3_2003 %>%
-  mutate(Year = year(O3_2003$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2004_summary <- O3_2004 %>%
-  mutate(Year = year(O3_2004$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2005_summary <- O3_2005 %>%
-  mutate(Year = year(O3_2005$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2006_summary <- O3_2006 %>%
-  mutate(Year = year(O3_2006$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2007_summary <- O3_2007 %>%
-  mutate(Year = year(O3_2007$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2008_summary <- O3_2008 %>%
-  mutate(Year = year(O3_2008$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2009_summary <- O3_2009 %>%
-  mutate(Year = year(O3_2009$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2010_summary <- O3_2010 %>%
-  mutate(Year = year(O3_2010$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2011_summary <- O3_2011 %>%
-  mutate(Year = year(O3_2011$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2012_summary <- O3_2012 %>%
-  mutate(Year = year(O3_2012$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2013_summary <- O3_2013 %>%
-  mutate(Year = year(O3_2013$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2014_summary <- O3_2014 %>%
-  mutate(Year = year(O3_2014$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2015_summary <- O3_2015 %>%
-  mutate(Year = year(O3_2015$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2016_summary <- O3_2016 %>%
-  mutate(Year = year(O3_2016$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2017_summary <- O3_2017 %>%
-  mutate(Year = year(O3_2017$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2018_summary <- O3_2018 %>%
-  mutate(Year = year(O3_2018$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  group_by(as.character(Site.Name), Year) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-
-```
-
-```{r summaries by month}
 O3_1980_summary_month <- O3_1980 %>%
   mutate(Year = year(O3_1980$Date)) %>%
   mutate(Month = month(O3_1980$Date)) %>%
@@ -632,30 +418,6 @@ O3_2018_summary_month <- O3_2018 %>%
   filter(Site.Name != "") %>%
   group_by(as.character(Site.Name), Month, Year) %>%
   summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-```
-
-```{r combine and process data sets}
-O3_alldata <- rbind(O3_1980,O3_1981,O3_1982,O3_1983,O3_1984,O3_1985,
-                  O3_1986,O3_1987,O3_1988,O3_1989,O3_1990,O3_1991,
-                  O3_1992,O3_1993,O3_1994,O3_1995,O3_1996,O3_1997,
-                  O3_1998,O3_1999,O3_2000,O3_2001,O3_2002,O3_2003,
-                  O3_2004,O3_2005,O3_2006,O3_2007,O3_2008,O3_2009,
-                  O3_2010,O3_2011,O3_2012,O3_2013,O3_2014,O3_2015,
-                  O3_2016,O3_2017,O3_2018)
-
-O3_total_year <- rbind(O3_1980_summary,O3_1981_summary,O3_1982_summary,
-                  O3_1983_summary,O3_1984_summary,O3_1985_summary,
-                  O3_1986_summary,O3_1987_summary,O3_1988_summary,
-                  O3_1989_summary,O3_1990_summary,O3_1991_summary,
-                  O3_1992_summary,O3_1993_summary,O3_1994_summary,
-                  O3_1995_summary,O3_1996_summary,O3_1997_summary,
-                  O3_1998_summary,O3_1999_summary,O3_2000_summary,
-                  O3_2001_summary,O3_2002_summary,O3_2003_summary,
-                  O3_2004_summary,O3_2005_summary,O3_2006_summary,
-                  O3_2007_summary,O3_2008_summary,O3_2009_summary,
-                  O3_2010_summary,O3_2011_summary,O3_2012_summary,
-                  O3_2013_summary,O3_2014_summary,O3_2015_summary,
-                  O3_2016_summary,O3_2017_summary,O3_2018_summary)
 
 O3_total_month <- rbind(O3_1980_summary_month,O3_1981_summary_month,O3_1982_summary_month,
                   O3_1983_summary_month,O3_1984_summary_month,O3_1985_summary_month,
@@ -671,10 +433,37 @@ O3_total_month <- rbind(O3_1980_summary_month,O3_1981_summary_month,O3_1982_summ
                   O3_2013_summary_month,O3_2014_summary_month,O3_2015_summary_month,
                   O3_2016_summary_month,O3_2017_summary_month,O3_2018_summary_month)
 
-O3_alldata_processed$DAILY_AQI_VALUE <- as.numeric(O3_alldata_processed$DAILY_AQI_VALUE)
-
-colnames(O3_total_year) <- c("Site.Name", "Year", "MeanAQI")
 colnames(O3_total_month) <- c("Site.Name","Month", "Year", "MeanAQI")
+
+O3_total_month_processed <-  O3_total_month %>%
+  filter(Site.Name != "") %>%
+  filter(Site.Name != "Hawthorne") %>%
+  filter(Site.Name != "Compton") %>%
+  filter(Site.Name != "Lancaster-Division Street") %>%
+  filter(Site.Name != "Long Beach (Hudson)") %>%
+  filter(Site.Name != "Lancaster-N. Beech St.") %>%
+  filter(Site.Name != "Lancaster-Ponderosa St.") %>%
+  filter(Site.Name != "Lancaster-Division Street") %>%
+  filter(Site.Name != "LAX Hastings") %>%
+  filter(Site.Name != "Lynwood") %>%
+  filter(Site.Name != "Pico Rivera #2") %>%
+  filter(Site.Name != "Santa Clarita") %>%
+  filter(Site.Name != "SITE IS LOCATED ONE HALF MILE EAST OF THE I-57/I-60 INTERCHANGE") %>%
+  filter(Site.Name != "SB25 trailer at Hollenbeck School") %>%
+  filter(Site.Name != "Santa Clarita-Honby St.") %>%
+  filter(Site.Name != "Wilmington-N. Mahar Ave") %>%
+  filter(Site.Name != "Palmdale-East Ave S") %>%
+  filter(Site.Name != "Lebec") %>%
+  filter(Site.Name != "West Los Angeles-Robertson Blvd")
+
+O3_alldata <- rbind(O3_1980,O3_1981,O3_1982,O3_1983,O3_1984,O3_1985,
+                  O3_1986,O3_1987,O3_1988,O3_1989,O3_1990,O3_1991,
+                  O3_1992,O3_1993,O3_1994,O3_1995,O3_1996,O3_1997,
+                  O3_1998,O3_1999,O3_2000,O3_2001,O3_2002,O3_2003,
+                  O3_2004,O3_2005,O3_2006,O3_2007,O3_2008,O3_2009,
+                  O3_2010,O3_2011,O3_2012,O3_2013,O3_2014,O3_2015,
+                  O3_2016,O3_2017,O3_2018)
+
 
 O3_alldata_processed <- O3_alldata %>%
   filter(DAILY_AQI_VALUE != ".") %>%
@@ -698,28 +487,86 @@ O3_alldata_processed <- O3_alldata %>%
   filter(Site.Name != "Lebec") %>%
   filter(Site.Name != "West Los Angeles-Robertson Blvd") 
 
+O3_alldata_processed$DAILY_AQI_VALUE <- as.numeric(O3_alldata_processed$DAILY_AQI_VALUE)
+
+```
 
 
-O3_total_year_processed <- O3_total_year %>%
+# Research Question and Rationale
+
+<Paragraph detailing the rationale for your analysis. What is the significant application and/or interest in this topic? Connect to environmental topic(s)/challenge(s).>
+
+Ozone (O~3~) in the troposphere is a main component of photochemical smog, which is air pollution associated with chemical reactions driven by sunlight (Sillman, 2003). Ozone can have health impacts on human respiratory systems, as well as negatively affecting forests and agricultural crops (Sillman, 2003). High ozone events are associated with sunshine, high temperatures, light winds, and conditions that suppress vertical atmospheric mixing (Sillman, 2003). Smog is also associated with high levels of automobile emissions containing hydrocarbons and nitrogen oxides (Haagen-Smit, 1952). Therefore, because it experiences all of these factors influencing high ozone levels, smog is infamous in the city of Los Angeles (Sillman, 2003; Haagen-Smit, 1952). 
+
+<Paragraph detailing your research question(s) and goals. What do you want to find out? Include a sentence (or a few) on the data set you are using to answer this question - just enough to give your reader an idea of where you are going with the analysis.>
+
+I want to research if ozone levels in Los Angeles County have changed temporally and spatially across the county.  I am using daily ozone data collected at various Los Angeles County site locations between the years of 1980 and 2018.  This data will give me the date, location, and AQI value for each day between January 1, 1980 through December 31, 2018.  The AQI is an index used to represent ozone levels in the atmosphere. 
+
+\newpage
+
+# Dataset Information
+
+<Information on how the data set for this analysis were collected, the data contained in the data set, and any important pieces of information that are relevant to your analyses. This section should contain much of same information as the README file for the data set but formatted in a way that is more narrative.>
+
+The data were collected from the EPA's outdoor air quality data website using the Download Daily Data tool.  The data sets were downloaded individually by year, leading to a total of 39 data sets.  Each data set contained the date, the source of the data, the daily 8-hour ozone concentration, the daily AQI value, the site name, and the longitude and latitude of each site, as well as other columns that are of slightly less importance.  Table 1 shows a summary of the raw data structure using the 1980  dataset as an example.
+
+<Add a table that summarizes your data structure. This table can be made in markdown text or inserted as a `kable` function in an R chunk. If the latter, do not include the code used to generate your table.>
+
+
+```{r Table Head, echo=FALSE, eval=TRUE}
+O3_1980_fortable <- O3_1980 %>%
+  select(Date, Source, Daily.Max.8.hour.Ozone.Concentration, 
+         UNITS, DAILY_AQI_VALUE, Site.Name, SITE_LATITUDE, SITE_LONGITUDE)
+?colnames
+colnames(O3_1980_fortable) <- c("Date", "Source", "Ozone Concentration", "Units", 
+                                "AQI", "Site", "Latitude", "Longitude")
+kable(head(O3_1980_fortable, 5), caption = "1980 Raw Data Table")
+```
+
+
+\newpage
+
+# Exploratory Data Analysis and Wrangling
+
+<Include R chunks for 5+ lines of summary code (display code and output), 3+ exploratory graphs (display graphs only), and any wrangling you do to your data set(s).> 
+
+First, I looked at a summary of the AQI values for 1980, 1990, 2000, 2010, and 2018 to get an idea of how the min, median, mean, and max values of ozone levels have changed over time throughout the entire county.
+```{r summary code}
+summary(O3_1980$DAILY_AQI_VALUE)
+summary(O3_1990$DAILY_AQI_VALUE)
+summary(O3_2000$DAILY_AQI_VALUE)
+summary(O3_2010$DAILY_AQI_VALUE)
+summary(O3_2018$DAILY_AQI_VALUE)
+```
+
+To wrangle my data, I made summary tables for each of the 39 years of data by summarizing the AQI values and grouping by month. I made sure that all of the dates were classified as dates.  Then, I used rbind to combine all of my summary tables from each year into one large data set. Below is an example of the wrangling for the year 1980. I corrected the column names to make my data analysis easier and filtered the full data set to only combine the 9 sites with the most complete data for all of the years. Additionally, I created a master data set of all of the non-summarized years of ozone data and wrangled it in a similar manner to only include the 9 sites. 
+```{r data wrangling}
+O3_1980$Date <- as.Date(O3_1980$Date, format = "%m/%d/%Y")
+
+O3_1980_summary_month <- O3_1980 %>%
+  mutate(Year = year(O3_1980$Date)) %>%
+  mutate(Month = month(O3_1980$Date)) %>%
+  filter(DAILY_AQI_VALUE != ".") %>%
   filter(Site.Name != "") %>%
-  filter(Site.Name != "Hawthorne") %>%
-  filter(Site.Name != "Compton") %>%
-  filter(Site.Name != "Lancaster-Division Street") %>%
-  filter(Site.Name != "Long Beach (Hudson)") %>%
-  filter(Site.Name != "Lancaster-N. Beech St.") %>%
-  filter(Site.Name != "Lancaster-Ponderosa St.") %>%
-  filter(Site.Name != "Lancaster-Division Street") %>%
-  filter(Site.Name != "LAX Hastings") %>%
-  filter(Site.Name != "Lynwood") %>%
-  filter(Site.Name != "Pico Rivera #2") %>%
-  filter(Site.Name != "Santa Clarita") %>%
-  filter(Site.Name != "SITE IS LOCATED ONE HALF MILE EAST OF THE I-57/I-60 INTERCHANGE") %>%
-  filter(Site.Name != "SB25 trailer at Hollenbeck School") %>%
-  filter(Site.Name != "Santa Clarita-Honby St.") %>%
-  filter(Site.Name != "Wilmington-N. Mahar Ave") %>%
-  filter(Site.Name != "Palmdale-East Ave S") %>%
-  filter(Site.Name != "Lebec") %>%
-  filter(Site.Name != "West Los Angeles-Robertson Blvd") 
+  group_by(as.character(Site.Name), Month, Year) %>%
+  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
+
+O3_total_month <- rbind(
+  O3_1980_summary_month,O3_1981_summary_month,O3_1982_summary_month,
+  O3_1983_summary_month,O3_1984_summary_month,O3_1985_summary_month,
+  O3_1986_summary_month,O3_1987_summary_month,O3_1988_summary_month,
+  O3_1989_summary_month,O3_1990_summary_month,O3_1991_summary_month,
+  O3_1992_summary_month,O3_1993_summary_month,O3_1994_summary_month,
+  O3_1995_summary_month,O3_1996_summary_month,O3_1997_summary_month,
+  O3_1998_summary_month,O3_1999_summary_month,O3_2000_summary_month,
+  O3_2001_summary_month,O3_2002_summary_month,O3_2003_summary_month,
+  O3_2004_summary_month,O3_2005_summary_month,O3_2006_summary_month,
+  O3_2007_summary_month,O3_2008_summary_month,O3_2009_summary_month,
+  O3_2010_summary_month,O3_2011_summary_month,O3_2012_summary_month,
+  O3_2013_summary_month,O3_2014_summary_month,O3_2015_summary_month,
+  O3_2016_summary_month,O3_2017_summary_month,O3_2018_summary_month)
+
+colnames(O3_total_month) <- c("Site.Name","Month", "Year", "MeanAQI")
 
 O3_total_month_processed <-  O3_total_month %>%
   filter(Site.Name != "") %>%
@@ -740,68 +587,80 @@ O3_total_month_processed <-  O3_total_month %>%
   filter(Site.Name != "Wilmington-N. Mahar Ave") %>%
   filter(Site.Name != "Palmdale-East Ave S") %>%
   filter(Site.Name != "Lebec") %>%
+  filter(Site.Name != "West Los Angeles-Robertson Blvd")
+
+O3_alldata <- rbind(O3_1980,O3_1981,O3_1982,O3_1983,O3_1984,O3_1985,
+                  O3_1986,O3_1987,O3_1988,O3_1989,O3_1990,O3_1991,
+                  O3_1992,O3_1993,O3_1994,O3_1995,O3_1996,O3_1997,
+                  O3_1998,O3_1999,O3_2000,O3_2001,O3_2002,O3_2003,
+                  O3_2004,O3_2005,O3_2006,O3_2007,O3_2008,O3_2009,
+                  O3_2010,O3_2011,O3_2012,O3_2013,O3_2014,O3_2015,
+                  O3_2016,O3_2017,O3_2018)
+
+
+O3_alldata_processed <- O3_alldata %>%
+  filter(DAILY_AQI_VALUE != ".") %>%
+  filter(Site.Name != "") %>%
+  filter(Site.Name != "Hawthorne") %>%
+  filter(Site.Name != "Compton") %>%
+  filter(Site.Name != "Lancaster-Division Street") %>%
+  filter(Site.Name != "Long Beach (Hudson)") %>%
+  filter(Site.Name != "Lancaster-N. Beech St.") %>%
+  filter(Site.Name != "Lancaster-Ponderosa St.") %>%
+  filter(Site.Name != "Lancaster-Division Street") %>%
+  filter(Site.Name != "LAX Hastings") %>%
+  filter(Site.Name != "Lynwood") %>%
+  filter(Site.Name != "Pico Rivera #2") %>%
+  filter(Site.Name != "Santa Clarita") %>%
+  filter(Site.Name != "SITE IS LOCATED ONE HALF MILE EAST OF THE I-57/I-60 INTERCHANGE") %>%
+  filter(Site.Name != "SB25 trailer at Hollenbeck School") %>%
+  filter(Site.Name != "Santa Clarita-Honby St.") %>%
+  filter(Site.Name != "Wilmington-N. Mahar Ave") %>%
+  filter(Site.Name != "Palmdale-East Ave S") %>%
+  filter(Site.Name != "Lebec") %>%
   filter(Site.Name != "West Los Angeles-Robertson Blvd") 
+```
+
+To explore my data, I first wanted to see how the monthly AQI values were distributed.  Figure 1 shows a histogram of the AQI monthly averages, and it was apparent that the data was not normally distributed. To confirm this, Figure 2 is a Q-Q plot of the Monthly AQI means, which shows that the points did not follow the line very well, giving me further evidence that the data was not normally distributed. Finally, Figure 3 is a box plot of all of the monthly AQI averages separated by site showing how ozone differed by location.
+
+
+```{r exploratory graph1, echo=FALSE, fig.cap="Histogram of monthly AQI averages for all sites 1980-2018"}
+explore.hist <- ggplot(O3_total_month_processed) +
+  geom_histogram(aes(x= MeanAQI), binwidth = 20) +
+  labs(title = "Monthly AQI Averages", x = "Mean AQI Values", y = "Counts")
+
+print(explore.hist)
 
 ```
 
-```{r exploratory tests}
-ggplot(O3_total_month_processed) +
-  geom_histogram(aes(x= MeanAQI), binwidth = 20)
 
+```{r exploratory graph2, echo=FALSE, fig.cap="Q-Q plot of monthly AQI averages for all sites 1980-2018"}
 qqnorm(O3_total_month_processed$MeanAQI)
 qqline(O3_total_month_processed$MeanAQI)
 
-shapiro.test(O3_total_month_processed$MeanAQI)
-
-summary(O3_alldata_processed$DAILY_AQI_VALUE)
-
-ggplot(O3_alldata_processed) +
-  geom_histogram(aes(x= DAILY_AQI_VALUE), binwidth = 50)
-
-qqnorm(O3_alldata_processed$DAILY_AQI_VALUE)
-qqline(O3_alldata_processed$DAILY_AQI_VALUE)
-
-
 ```
 
-```{r plot processed data}
-ggplot(O3_total_year_processed, aes(x = Year, y = MeanAQI)) +
-  geom_point() +
-  scale_y_discrete() +
-  labs(y = "Mean Annual AQI Values", x = "Year")
 
-ggplot(O3_total_month_processed, aes(x = Year, y = MeanAQI)) +
-  geom_point() +
-  scale_y_discrete() +
-  labs(y = "Mean Annual AQI Values", x = "Year")
-
-ggplot(O3_alldata_processed, aes(x = Date, y = DAILY_AQI_VALUE)) +
-  geom_point(size = 0.5) +
-  labs(y = "Daily AQI Values", x = "Year")
+```{r exploratory graph3, echo=FALSE, fig.cap="Boxplot of monthly AQI averages for each site 1980-2018"}
+ggplot(O3_total_month_processed) +
+  geom_boxplot(aes(x = Site.Name, y = MeanAQI)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(x = "Site Name", y = "Mean Monthly AQI Value")
 ```
 
-```{r Kruskal-Wallis}
-O3_total_month_processed$Site.Name <- as.factor(O3_total_month_processed$Site.Name)
-kruskal.test(O3_total_month_processed$MeanAQI, O3_total_month_processed$Site.Name) 
-```
 
+<Include text sections to accompany these R chunks to explain the reasoning behind your workflow, and the rationale for your approach.>
+
+
+\newpage
+
+# Analysis
+<Include R chunks for 3+ statistical tests (display code and output) and 3+ final visualization graphs (display graphs only).>
+
+<Include text sections to accompany these R chunks to explain the reasoning behind your workflow, rationale for your approach, and the justification of meeting or failing to meet assumptions of tests.>
+
+I ran a series of Mann-Kendall and Pettitt tests to find where the statistically significant breakpoints were in the monthly summary data. First, the Mann-Kendall test on the entire data set showed that there was a significant negative trend for all of the years of ozone data.  Next, the pettitt test on the entire data set showed that there was a break point at the year 1995.  Mann-Kendall tests on the data before and after the break point showed a significant negative trend between 1980 and 1995 and significant positive trend from 1995 to 2018. A second Pettitt test showed another break point in 2011. The Mann-Kendall tests showed there was not a significant trend from 1995 to 2011 and a significant positive trend from 2011 to 2018.  A third Pettitt test showed one more break point at 2016.  The Mann-Kendall tests showed there was a significant positive trend from 2011 to 2016, and no significant trend between 2016 and 2019.  A final Pettitt test was run on the remaining section to ensure there were no more statistically significant break points in the data remaining. 
 ```{r mann-kendall tests}
-mk.test(O3_total_year_processed$MeanAQI)
-
-pettitt.test(O3_total_year_processed$MeanAQI) #at 169
-
-mk.test(O3_total_year_processed$MeanAQI[1:168])
-mk.test(O3_total_year_processed$MeanAQI[169:488])
-
-pettitt.test(O3_total_year_processed$MeanAQI[169:488]) #at 169 + 92
-
-mk.test(O3_total_year_processed$MeanAQI[169:260])
-mk.test(O3_total_year_processed$MeanAQI[261:488])
-
-pettitt.test(O3_total_year_processed$MeanAQI[261:488]) #no longer significant
-
-
-
 mk.test(O3_total_month_processed$MeanAQI)
 
 pettitt.test(O3_total_month_processed$MeanAQI) #change point at 1500
@@ -822,39 +681,10 @@ mk.test(O3_total_month_processed$MeanAQI[3776:3951])
 pettitt.test(O3_total_month_processed$MeanAQI[3776:3951]) #change point not significant
 ```
 
-```{r plot data with break points}
-AQI.Plot.month <- ggplot(O3_total_month_processed, aes(x = Year, y = MeanAQI)) +
-  geom_rect(xmin = 1978, xmax = 2020, ymin = 0, ymax = 50, fill = "darkolivegreen1", alpha = 0.1) +
-  geom_rect(xmin = 1978, xmax = 2020, ymin = 51, ymax = 100, fill = "khaki1", alpha = 0.1) +
-  geom_rect(xmin = 1978, xmax = 2020, ymin = 101, ymax = 150, fill = "tan1", alpha = 0.1) +
-  geom_rect(xmin = 1978, xmax = 2020, ymin = 151, ymax = 200, fill = "red", alpha = 0.1) +
-  geom_vline(aes(xintercept = as.numeric("1995")), color = "black", linetype = 2) +
-  geom_vline(aes(xintercept = as.numeric("2011")), color = "black", linetype = 2) +
-  geom_vline(aes(xintercept = as.numeric("2016")), color = "black", linetype = 2) +
-  geom_point(aes(color = Site.Name), size = 1.5, alpha = 0.8) +
-  scale_color_manual(values = c("blue4", "darkcyan", "coral4", "darkgreen", "darkorchid4", 
-                                "deeppink4", "lightblue4", "olivedrab", "slategray3")) +
-  labs(title = "Ozone Concentration in Los Angeles County 1980-2018", 
-       y = "Mean Monthly AQI Values", color = "Sites")
+I then Ran a Seasonal Mann-Kendall test on the entire data set to determine if there was any statistically significant differences between subsets of each year.  First, I ran a seasonal test with a frequency of 4, representing the 3 months of each annual season.  The results showed a statistically significant difference between all four seasons. Next, I ran a seasonal test with a frequency of 12, representing all 12 months out of the year.  The results showed a statistically significant difference between each of the 12 months out of the year. 
+```{r seasonal mann-kendall}
 
-print(AQI.Plot.month)
-
-AQI.Plot.year <- ggplot(O3_total_year_processed, aes(x = Year, y = MeanAQI)) +
-  geom_rect(xmin = 1978, xmax = 2020, ymin = 0, ymax = 50, fill = "darkolivegreen1", alpha = 0.1) +
-  geom_rect(xmin = 1978, xmax = 2020, ymin = 51, ymax = 100, fill = "khaki1", alpha = 0.1) +
-  geom_rect(xmin = 1978, xmax = 2020, ymin = 101, ymax = 150, fill = "tan1", alpha = 0.1) +
-  geom_point(aes(color = Site.Name), size = 2.5, alpha = 0.8) +
-  scale_color_manual(values = c("blue4", "darkcyan", "coral4", "darkgreen", "darkorchid4", 
-                                "deeppink4", "lightblue4", "olivedrab", "slategray3")) +
-  #geom_vline(aes(xintercept = as.numeric("1995")), color = "black", linetype = 2) +
-  #geom_vline(aes(xintercept = as.numeric("2002")), color = "black", linetype = 2) +
-  labs(title = "Ozone Concentration in Los Angeles County 1980-2018", y = "Mean Annual AQI Values", color = "Sites")
-
-
-print(AQI.Plot.year)
-```
-
-```{r seasonal mann-kendal}
+O3_alldata_processed$DAILY_AQI_VALUE <- as.numeric(O3_alldata_processed$DAILY_AQI_VALUE)
 O3_alldata_processed_timeseries_season <- ts(O3_alldata_processed$DAILY_AQI_VALUE,
                                 start = c(1980, 1) ,frequency = 4)
 
@@ -865,185 +695,124 @@ summary(O3_alldata_season_smk)
 O3_alldata_processed_timeseries_month <- ts(O3_alldata_processed$DAILY_AQI_VALUE,
                                 start = c(1980, 1) ,frequency = 12)
 
-O3_alldata_month_smk <- smk.test(O3_alldata_processed_timeseries)
+O3_alldata_month_smk <- smk.test(O3_alldata_processed_timeseries_month)
 summary(O3_alldata_month_smk)
 ```
 
-```{r box plots}
+Finally, since the data was not normally distributed, I ran a Kruskal-Wallis test to determine if there was a significant difference in Ozone concentration between each site.  The results of the test showed that there is a significant difference between the monthly averaged AQI values for each site between 1980 and 2018.
+```{r Kruskal-Wallis}
+O3_total_month_processed$Site.Name <- as.factor(O3_total_month_processed$Site.Name)
+kruskal.test(O3_total_month_processed$MeanAQI, O3_total_month_processed$Site.Name) 
+```
+
+Figure 4 shows the summarized monthly AQI values by year.  The green portion of the graph indicates "Good" levels of trophospheric ozone, the yellow portion "Moderate" levels, the orange portion "Unhealthy for sensitive groups", and the red portion "Unhealthy". The blue dashed lines indicate the break points determined by the Pettitt tests.
+
+
+```{r plot data with break points, echo=FALSE, fig.cap="Monthly AQI averages from 1980 to 2018 with break points"}
+AQI.Plot.month <- ggplot(O3_total_month_processed, aes(x = Year, y = MeanAQI)) +
+  geom_rect(xmin = 1978, xmax = 2020, ymin = 0, ymax = 50, fill = "darkolivegreen1", alpha = 0.1) +
+  geom_rect(xmin = 1978, xmax = 2020, ymin = 51, ymax = 100, fill = "khaki1", alpha = 0.1) +
+  geom_rect(xmin = 1978, xmax = 2020, ymin = 101, ymax = 150, fill = "tan1", alpha = 0.1) +
+  geom_rect(xmin = 1978, xmax = 2020, ymin = 151, ymax = 200, fill = "red", alpha = 0.1) +
+  geom_vline(aes(xintercept = as.numeric("1995")), color = "blue", linetype = 2) +
+  geom_vline(aes(xintercept = as.numeric("2011")), color = "blue", linetype = 2) +
+  geom_vline(aes(xintercept = as.numeric("2016")), color = "blue", linetype = 2) +
+  geom_point() +
+  labs(title = "Ozone Concentration in Los Angeles County 1980-2018", 
+       y = "Mean Monthly AQI Values", color = "Sites")
+
+print(AQI.Plot.month)
+```
+
+Figure 5 shows the summarized monthly AQI values by year and colored by month.  As noted by Sillman, it is expected that the highest ozone levels will be in the hottest months, and the lowest ozone levels will be in the cooler months.  This is clearly seen after 1990 with the blue-green colors having higher ozone levels each year, and the yellow and purple colors having lower ozone levels each year. Between 1980 and 1990, there is not as clear of a distinction between the months and levels of ozone. 
+
+
+```{r plot data with seasons, echo=FALSE, fig.cap="Monthly AQI averages from 1980 to 2018 by season"}
+AQI.Plot.season <- ggplot(O3_total_month_processed, aes(x = Year, y = MeanAQI)) +
+  geom_rect(xmin = 1978, xmax = 2020, ymin = 0, ymax = 50, fill = "darkolivegreen1", alpha = 0.1) +
+  geom_rect(xmin = 1978, xmax = 2020, ymin = 51, ymax = 100, fill = "khaki1", alpha = 0.1) +
+  geom_rect(xmin = 1978, xmax = 2020, ymin = 101, ymax = 150, fill = "tan1", alpha = 0.1) +
+  geom_rect(xmin = 1978, xmax = 2020, ymin = 151, ymax = 200, fill = "red", alpha = 0.1) +
+  geom_point(aes(color = Month), alpha = 0.7) +
+  scale_color_viridis() +
+  labs(title = "Ozone Concentration in Los Angeles County 1980-2018 by Season", 
+       y = "Mean Monthly AQI Values", color = "Month")
+
+print(AQI.Plot.season)
+```
+
+Figures 6-10 show the total daily AQI values for each site in the years 1980, 1990, 2000, 2010, and 2018. From 1980 to 2000, it is easy to see that ozone is decreasing for each site over time.  It seems that for some of the sites between 2000 and 2010 the ozone levels seem to have more concentrated AQI values at lower levels with some extreme events as outliers, but the mean AQI values remain fairly constant. Locations more inland like Reseda, Azusa, Burbank, Glendora, and Pasadena have higher AQI values than sites closer to the coast such as West Los Angeles and Los Angeles-North Main Street.
+
+
+```{r box plot 1, echo=FALSE, fig.cap="Boxplot of 1980 AQI values by site"}
 boxplot1980 <- ggplot(O3_1980) +
   geom_boxplot(aes(x = Site.Name, y = DAILY_AQI_VALUE)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  labs(x = "Site Name", y = "Daily AQI Value")
+  ylim(0,250) +
+  labs(title = "1980 AQI Values by Site",  x = "Site Name", y = "Daily AQI Value") 
+print(boxplot1980)
+```
 
+
+```{r box plot 2, echo=FALSE, fig.cap="Boxplot of 1990 AQI values by site"}
 boxplot1990 <- ggplot(O3_1990) +
   geom_boxplot(aes(x = Site.Name, y = DAILY_AQI_VALUE)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  labs(x = "Site Name", y = "Daily AQI Value")
+  ylim(0,250) +
+  labs(title = "1990 AQI Values by Site", x = "Site Name", y = "Daily AQI Value")
+print(boxplot1990)
+```
 
+
+```{r box plot 3, echo=FALSE, fig.cap="Boxplot of 2000 AQI values by site"}
 boxplot2000 <- ggplot(O3_2000) +
   geom_boxplot(aes(x = Site.Name, y = DAILY_AQI_VALUE)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  labs(x = "Site Name", y = "Daily AQI Value")
+  ylim(0,250) +
+  labs(title = "2000 AQI Values by Site", x = "Site Name", y = "Daily AQI Value")
+print(boxplot2000)
+```
 
+
+```{r box plot 4, echo=FALSE, fig.cap="Boxplot of 2010 AQI values by site"}
 boxplot2010 <- ggplot(O3_2010) +
   geom_boxplot(aes(x = Site.Name, y = DAILY_AQI_VALUE)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  labs(x = "Site Name", y = "Daily AQI Value")
+  ylim(0,250) +
+  labs(title = "2010 AQI Values by Site", x = "Site Name", y = "Daily AQI Value")
+print(boxplot2010)
+```
 
+
+```{r box plot 5, echo=FALSE, fig.cap="Boxplot of 2018 AQI values by site"}
 boxplot2018 <- ggplot(O3_2018) +
   geom_boxplot(aes(x = Site.Name, y = DAILY_AQI_VALUE)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  labs(x = "Site Name", y = "Daily AQI Value")
-
-grid.arrange(boxplot1980, boxplot1990, boxplot2000, boxplot2010, boxplot2018)
-?grid.arrange
-
+  ylim(0,250) +
+  labs(title = "2018 AQI Values by Site", x = "Site Name", y = "Daily AQI Value")
+print(boxplot2018)
 ```
 
-```{r spatial mapping}
-O3_1980_spatial_summary <- O3_1980 %>%
-  mutate(Year = year(O3_1980$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  filter(Site.Name != "Hawthorne") %>%
-  filter(Site.Name != "Compton") %>%
-  filter(Site.Name != "Lancaster-Division Street") %>%
-  filter(Site.Name != "Long Beach (Hudson)") %>%
-  filter(Site.Name != "Lancaster-N. Beech St.") %>%
-  filter(Site.Name != "Lancaster-Ponderosa St.") %>%
-  filter(Site.Name != "Lancaster-Division Street") %>%
-  filter(Site.Name != "LAX Hastings") %>%
-  filter(Site.Name != "Lynwood") %>%
-  filter(Site.Name != "Pico Rivera #2") %>%
-  filter(Site.Name != "Santa Clarita") %>%
-  filter(Site.Name != "SITE IS LOCATED ONE HALF MILE EAST OF THE I-57/I-60 INTERCHANGE") %>%
-  filter(Site.Name != "SB25 trailer at Hollenbeck School") %>%
-  filter(Site.Name != "Santa Clarita-Honby St.") %>%
-  filter(Site.Name != "Wilmington-N. Mahar Ave") %>%
-  filter(Site.Name != "Palmdale-East Ave S") %>%
-  filter(Site.Name != "Lebec") %>%
-  filter(Site.Name != "West Los Angeles-Robertson Blvd") %>%
-  group_by(Site.Name, Year, SITE_LATITUDE, SITE_LONGITUDE) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_1990_spatial_summary <- O3_1990 %>%
-  mutate(Year = year(O3_1990$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  filter(Site.Name != "Hawthorne") %>%
-  filter(Site.Name != "Compton") %>%
-  filter(Site.Name != "Lancaster-Division Street") %>%
-  filter(Site.Name != "Long Beach (Hudson)") %>%
-  filter(Site.Name != "Lancaster-N. Beech St.") %>%
-  filter(Site.Name != "Lancaster-Ponderosa St.") %>%
-  filter(Site.Name != "Lancaster-Division Street") %>%
-  filter(Site.Name != "LAX Hastings") %>%
-  filter(Site.Name != "Lynwood") %>%
-  filter(Site.Name != "Pico Rivera #2") %>%
-  filter(Site.Name != "Santa Clarita") %>%
-  filter(Site.Name != "SITE IS LOCATED ONE HALF MILE EAST OF THE I-57/I-60 INTERCHANGE") %>%
-  filter(Site.Name != "SB25 trailer at Hollenbeck School") %>%
-  filter(Site.Name != "Santa Clarita-Honby St.") %>%
-  filter(Site.Name != "Wilmington-N. Mahar Ave") %>%
-  filter(Site.Name != "Palmdale-East Ave S") %>%
-  filter(Site.Name != "Lebec") %>%
-  filter(Site.Name != "West Los Angeles-Robertson Blvd") %>%
-  group_by(Site.Name, Year, SITE_LATITUDE, SITE_LONGITUDE) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2000_spatial_summary <- O3_2000 %>%
-  mutate(Year = year(O3_2000$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  filter(Site.Name != "Hawthorne") %>%
-  filter(Site.Name != "Compton") %>%
-  filter(Site.Name != "Lancaster-Division Street") %>%
-  filter(Site.Name != "Long Beach (Hudson)") %>%
-  filter(Site.Name != "Lancaster-N. Beech St.") %>%
-  filter(Site.Name != "Lancaster-Ponderosa St.") %>%
-  filter(Site.Name != "Lancaster-Division Street") %>%
-  filter(Site.Name != "LAX Hastings") %>%
-  filter(Site.Name != "Lynwood") %>%
-  filter(Site.Name != "Pico Rivera #2") %>%
-  filter(Site.Name != "Santa Clarita") %>%
-  filter(Site.Name != "SITE IS LOCATED ONE HALF MILE EAST OF THE I-57/I-60 INTERCHANGE") %>%
-  filter(Site.Name != "SB25 trailer at Hollenbeck School") %>%
-  filter(Site.Name != "Santa Clarita-Honby St.") %>%
-  filter(Site.Name != "Wilmington-N. Mahar Ave") %>%
-  filter(Site.Name != "Palmdale-East Ave S") %>%
-  filter(Site.Name != "Lebec") %>%
-  filter(Site.Name != "West Los Angeles-Robertson Blvd") %>%
-  group_by(Site.Name, Year, SITE_LATITUDE, SITE_LONGITUDE) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2010_spatial_summary <- O3_2010 %>%
-  mutate(Year = year(O3_2010$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  filter(Site.Name != "Hawthorne") %>%
-  filter(Site.Name != "Compton") %>%
-  filter(Site.Name != "Lancaster-Division Street") %>%
-  filter(Site.Name != "Long Beach (Hudson)") %>%
-  filter(Site.Name != "Lancaster-N. Beech St.") %>%
-  filter(Site.Name != "Lancaster-Ponderosa St.") %>%
-  filter(Site.Name != "Lancaster-Division Street") %>%
-  filter(Site.Name != "LAX Hastings") %>%
-  filter(Site.Name != "Lynwood") %>%
-  filter(Site.Name != "Pico Rivera #2") %>%
-  filter(Site.Name != "Santa Clarita") %>%
-  filter(Site.Name != "SITE IS LOCATED ONE HALF MILE EAST OF THE I-57/I-60 INTERCHANGE") %>%
-  filter(Site.Name != "SB25 trailer at Hollenbeck School") %>%
-  filter(Site.Name != "Santa Clarita-Honby St.") %>%
-  filter(Site.Name != "Wilmington-N. Mahar Ave") %>%
-  filter(Site.Name != "Palmdale-East Ave S") %>%
-  filter(Site.Name != "Lebec") %>%
-  filter(Site.Name != "West Los Angeles-Robertson Blvd") %>%
-  group_by(Site.Name, Year, SITE_LATITUDE, SITE_LONGITUDE) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
-O3_2018_spatial_summary <- O3_2018 %>%
-  mutate(Year = year(O3_2018$Date)) %>%
-  filter(DAILY_AQI_VALUE != ".") %>%
-  filter(Site.Name != "") %>%
-  filter(Site.Name != "Hawthorne") %>%
-  filter(Site.Name != "Compton") %>%
-  filter(Site.Name != "Lancaster-Division Street") %>%
-  filter(Site.Name != "Long Beach (Hudson)") %>%
-  filter(Site.Name != "Lancaster-N. Beech St.") %>%
-  filter(Site.Name != "Lancaster-Ponderosa St.") %>%
-  filter(Site.Name != "Lancaster-Division Street") %>%
-  filter(Site.Name != "LAX Hastings") %>%
-  filter(Site.Name != "Lynwood") %>%
-  filter(Site.Name != "Pico Rivera #2") %>%
-  filter(Site.Name != "Santa Clarita") %>%
-  filter(Site.Name != "SITE IS LOCATED ONE HALF MILE EAST OF THE I-57/I-60 INTERCHANGE") %>%
-  filter(Site.Name != "SB25 trailer at Hollenbeck School") %>%
-  filter(Site.Name != "Santa Clarita-Honby St.") %>%
-  filter(Site.Name != "Wilmington-N. Mahar Ave") %>%
-  filter(Site.Name != "Palmdale-East Ave S") %>%
-  filter(Site.Name != "Lebec") %>%
-  filter(Site.Name != "West Los Angeles-Robertson Blvd") %>%
-  group_by(Site.Name, Year, SITE_LATITUDE, SITE_LONGITUDE) %>%
-  summarise(MeanAQI = mean(as.numeric(DAILY_AQI_VALUE)))
+
+\newpage
+
+# Summary and Conclusions
+<Summarize your major findings from your analyses. What conclusions do you draw from your findings? Make sure to apply this to a broader application for the research question you have answered.>
+
+This analysis shows that average ozone levels as well as the intensity of extreme ozone events have decreased overall in Los Angeles County between 1980 and 2018.  The implementation of more stringent ozone regulations by way of lowering the NAAQS levels for tropospheric ozone and higher standards for automobile emissions put in place in 1990 as an amendment to the Clean Air Act are likely the reason for this trend (EPA, 2017). However, it also showed that there have been some increasing average ozone levels since 2011.  This may be due to population growth in a city whose transportation is dominated by personal automobiles. This, combined with rising average annual temperatures as a result of climate change, would likely result in higher levels of ozone throughout the year. The increasing proportion of electric and hybrid vehicles owned by Los Angeles County residents could reduce this effect in the coming decades in order to mitigate the impacts of climate change. 
 
 
+Additionally, there were found to be higher levels of ozone at inland measurement sites compared to those closer to the coast.  This could be attributed to the unique geographic composition of Los Angeles.  The daytime sea breeze blows smog away from the coast, where it is then trapped by the surrounding mountain formations, leading to higher levels of ozone around the inner edges of Los Angeles during the day (Lu & Turco, 1996). There were some irregularities in the data between 1980 and 1990, as seen by the lack of seasonality of the graphed data points and the dramatic shift in the range of AQI values.  This could potentially be due to a change in collection methodology around 1990, allowing for more accurate ozone measurements to be taken, but more research into that anomaly is required.  
 
-mapviewOptions(basemaps = c('OpenStreetMap','Esri.WorldImagery','Stamen.Toner','Stamen.Watercolor'))
+\newpage
 
-O3_1980_spatial_summary_sf <- st_as_sf(O3_1980_spatial_summary,coords = c('SITE_LONGITUDE','SITE_LATITUDE'),crs=4326)
-O3_1990_spatial_summary_sf <- st_as_sf(O3_1990_spatial_summary,coords = c('SITE_LONGITUDE','SITE_LATITUDE'),crs=4326)
-O3_2000_spatial_summary_sf <- st_as_sf(O3_2000_spatial_summary,coords = c('SITE_LONGITUDE','SITE_LATITUDE'),crs=4326)
-O3_2010_spatial_summary_sf <- st_as_sf(O3_2010_spatial_summary,coords = c('SITE_LONGITUDE','SITE_LATITUDE'),crs=4326)
-O3_2018_spatial_summary_sf <- st_as_sf(O3_2018_spatial_summary,coords = c('SITE_LONGITUDE','SITE_LATITUDE'),crs=4326)
+# Sources 
+U.S. Environmental Protection Agency (EPA). (2017). Clean Air Act Overview. Retrieved from https://www.epa.gov/clean-air-act-overview/1990-clean-air-act-amendment-summary-title-i
 
+Haagen-Smit, A. J. (1952). Chemistry and physiology of Los Angeles smog. Industrial & Engineering Chemistry, 44(6), 1342-1346.
 
-map_1980 <- mapview(O3_1980_spatial_summary_sf, zcol = "Site.Name", cex = "MeanAQI")
-map_1990 <- mapview(O3_1990_spatial_summary_sf, zcol = "Site.Name", cex = "MeanAQI")
-map_2000 <- mapview(O3_2000_spatial_summary_sf, zcol = "Site.Name", cex = "MeanAQI")
-map_2010 <- mapview(O3_2010_spatial_summary_sf, zcol = "Site.Name", cex = "MeanAQI")
-map_2018 <- mapview(O3_2018_spatial_summary_sf, zcol = "Site.Name", cex = "MeanAQI")
+Lu, R., & Turco, R. P. (1996). Ozone distributions over the Los Angeles basin: Three-dimensional simulations with the SMOG model. Atmospheric Environment, 30(24), 4155-4176.
 
-print(map_1980)
-print(map_1990)
-print(map_2000)
-print(map_2010)
-print(map_2018)
+Sillman, S. (2003). Overview: Tropospheric ozone, smog and ozone-NOx-VOC sensitivity. Treatise on Geochemistry.
 
-```
 
